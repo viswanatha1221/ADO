@@ -1,0 +1,42 @@
+trigger: 
+- main
+
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: TerraformTaskV4@4
+      displayName: TF init
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        backendServiceArm: 'Azure subscription 1(9ca0efa5-8365-45b3-a22a-ab092d085ff3)'
+        backendAzureRmResourceGroupName: 'adv360'
+        backendAzureRmStorageAccountName: 'viswaadotf'
+        backendAzureRmContainerName: 'test-tfstate'
+        backendAzureRmKey: 'test-terraform.tfstate'
+        
+        - task: TerraformTaskV4@4
+         displayName: TF validate
+          inputs:
+            provider: 'azurerm'
+            command: 'validate'
+        
+        - task: TerraformTaskV4@4
+          displayName: TF fmt
+            inputs:
+              provider: 'azurerm'
+              command: 'custom'
+              outputTo: 'console'
+              customCommand: 'fmt'
+              environmentServiceNameAzureRM: 'Azure subscription 1(9ca0efa5-8365-45b3-a22a-ab092d085ff3)'
+        
+        - task: TerraformTaskV4@4
+          displayName: TF plan
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            environmentServiceNameAzureRM: 'Azure subscription 1(9ca0efa5-8365-45b3-a22a-ab092d085ff3)'
